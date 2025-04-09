@@ -69,14 +69,17 @@ services:
 
   collab-service:
     build:
-    context: ./collab-service
-    dockerfile: Dockerfile
+      context: ./collab-service
+      dockerfile: Dockerfile
     ports:
       - "5003:5003"
+      - "3001:3001"
     environment:
-      - MONGO_URI=mongodb://mongo:27017/peerprep-collab
+      MONGO_URI: mongodb://mongodb:27017/peerprep-collab
     depends_on:
-      - mongo
+      - mongodb
+    networks:
+      - app_network
 
 networks:
   app_network:

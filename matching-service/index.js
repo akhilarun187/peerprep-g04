@@ -1,26 +1,27 @@
-const express = require('express');
-const cors = require('cors');
-const http = require('http');
-const { Server } = require('socket.io');
-const matchRoutes = require('./routes/matching-routes.js');
-const {startConsumer} = require('./consumer/consumer.js')
-const { initSocket, getIO } = require('./socket.js');
-const connectToDB = require('./db/mongo-connect.js');
+const express = require("express");
+const cors = require("cors");
+const http = require("http");
+const { Server } = require("socket.io");
+const matchRoutes = require("./routes/matching-routes.js");
+const { startConsumer } = require("./consumer/consumer.js");
+const { initSocket, getIO } = require("./socket.js");
+const connectToDB = require("./db/mongo-connect.js");
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
-  cors: { origin: ['http://localhost:4000', 'http://frontend:4000'], 
-    methods: ['GET', 'POST'],
-    allowedHeaders: ['Content-Type', 'Authorization'],}
+  cors: {
+    origin: ["http://localhost:4000", "http://frontend:4000"],
+    methods: ["GET", "POST"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  },
 });
 
 initSocket(io); // setup socket event listeners
 
-
 app.use(cors());
 app.use(express.json());
-app.use('/api', matchRoutes);
+app.use("/api", matchRoutes);
 
 app.get("/", (req, res, next) => {
   console.log("Sending msg fom rabbitMQ!");
@@ -29,9 +30,18 @@ app.get("/", (req, res, next) => {
   });
 });
 
-server.listen(5000, () => console.log('maching service running on port 5000'));
-connectToDB()
+server.listen(5000, () => console.log("maching service running on port 5000"));
+connectToDB();
 
 startConsumer(); // start RabbitMQ consumer
 
-
+io.to(user1.socketId)
+  .to(user2.socketId)
+  .emit("match_success", {
+    sessionId: `session_${user1.id}_${user2.id}`,
+    problem: {
+      id: selectedProblem.id,
+      title: selectedProblem.title,
+      starterCode: selectedProblem.starterCode,
+    },
+  });

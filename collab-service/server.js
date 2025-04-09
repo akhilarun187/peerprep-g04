@@ -3,45 +3,42 @@ const http = require("http");
 const { Server } = require("socket.io");
 const mongoose = require("mongoose");
 const cors = require("cors");
-require("dotenv").config();
 
-// Initialize app
 const app = express();
 app.use(cors());
 const server = http.createServer(app);
+
 const io = new Server(server, {
-  cors: { origin: "*" }, // Allow all frontend origins (update in production)
+  cors: {
+    origin: ["http://localhost:4000", "http://frontend:4000"],
+    methods: ["GET", "POST"],
+  },
 });
 
 // MongoDB connection
 mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => console.log("Connected to MongoDB"))
+  .connect(process.env.MONGO_URI || "mongodb://mongodb:27017/collab_sessions")
+  .then(() => console.log("MongoDB connected"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
-// Socket.IO logic
+// Socket.IO handlers
 io.on("connection", (socket) => {
-  console.log("User connected:", socket.id);
+  console.log(`User connected: ${socket.id}`);
 
-  // Join a collaboration session
-  socket.on("join-session", (sessionId) => {
+  socket.on("join_session", (sessionId) => {
     socket.join(sessionId);
-    console.log(`User ${socket.id} joined session ${sessionId}`);
+    console.log(`User joined session ${sessionId}`);
   });
 
-  // Handle code updates
-  socket.on("code-update", ({ sessionId, code }) => {
-    socket.to(sessionId).emit("code-update", code); // Broadcast to others in session
+  socket.on("code_update", ({ sessionId, code }) => {
+    socket.to(sessionId).emit("code_update", code);
   });
 
-  // Disconnect
   socket.on("disconnect", () => {
-    console.log("User disconnected:", socket.id);
+    console.log(`User disconnected: ${socket.id}`);
   });
 });
 
-// Start server
-const PORT = process.env.PORT || 5003;
-server.listen(PORT, () => {
-  console.log(`Collaboration service running on port ${PORT}`);
+server.listen(5003, () => {
+  console.log("Collaboration service running on port 5003");
 });
